@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+/* Study Planner colours: use them as bg-navy, text-gold, ring-mist, etc. */
+@theme {
+  --color-navy: #17304f;
+  --color-mist: #a9c8e8;
+  --color-gold: #d4a853;
+}

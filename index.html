@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Study Planner – To-Do List</title>
+  </head>
+  <body class="min-h-screen bg-mist/40 px-4 py-8 text-slate-800 sm:py-16">
+    <main class="mx-auto max-w-xl rounded-2xl bg-white p-6 shadow-lg sm:p-8">
+      <header class="mb-6">
+        <h1 class="text-3xl font-bold tracking-tight text-navy">Study Planner</h1>
+        <p class="text-slate-600">Plan your study day, one task at a time.</p>
+      </header>
+
+      <!-- 1. Add-task form -->
+      <form id="task-form" class="flex flex-col gap-2 sm:flex-row" novalidate>
+        <label for="task-input" class="sr-only">New study task</label>
+        <input
+          id="task-input"
+          name="task"
+          type="text"
+          maxlength="120"
+          autocomplete="off"
+          placeholder="What do you need to study?"
+          aria-describedby="task-error"
+          class="flex-1 rounded-lg border border-slate-300 px-3 py-2
+            focus:border-navy focus:outline-none focus:ring-2 focus:ring-mist"
+        />
+        <button
+          type="submit"
+          class="rounded-lg bg-navy px-4 py-2 font-semibold text-white
+            hover:bg-navy/90 focus-visible:outline-2 focus-visible:outline-offset-2
+            focus-visible:outline-navy"
+        >
+          Add task
+        </button>
+      </form>
+      <p id="task-error" class="mt-2 min-h-5 text-sm text-red-600" aria-live="polite"></p>
+
+      <!-- 2. Filters -->
+      <nav aria-label="Filter tasks" class="mt-4 flex gap-2" id="filters">
+        <button type="button" data-filter="all" aria-pressed="true"
+          class="filter-btn rounded-full px-3 py-1 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy">All</button>
+        <button type="button" data-filter="active" aria-pressed="false"
+          class="filter-btn rounded-full px-3 py-1 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy">Active</button>
+        <button type="button" data-filter="completed" aria-pressed="false"
+          class="filter-btn rounded-full px-3 py-1 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy">Completed</button>
+      </nav>
+
+      <!-- 3. Task list (filled by render()) -->
+      <ul id="task-list" class="mt-4 divide-y divide-slate-200" aria-label="Tasks"></ul>
+      <p id="empty-state" class="mt-6 text-center text-slate-500" hidden></p>
+
+      <!-- 4. Footer -->
+      <footer class="mt-6 flex items-center justify-between text-sm text-slate-500">
+        <span id="task-count" aria-live="polite"></span>
+        <button
+          type="button"
+          id="clear-completed"
+          class="rounded px-2 py-1 hover:text-red-700 focus-visible:outline-2 focus-visible:outline-navy"
+          hidden
+        >
+          Clear completed
+        </button>
+      </footer>
+    </main>
+
+    <template id="task-template">
+      <li class="group flex items-center gap-3 py-3">
+        <input type="checkbox" class="task-toggle size-5 accent-navy" />
+        <span class="task-text flex-1 break-words"></span>
+        <button
+          type="button"
+          data-action="delete"
+          class="rounded px-2 py-1 text-slate-500 hover:bg-red-50 hover:text-red-700
+            focus-visible:outline-2 focus-visible:outline-red-500"
+        >
+          <span aria-hidden="true">✕</span>
+        </button>
+      </li>
+    </template>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
