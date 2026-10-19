@@ -16,6 +16,7 @@ const EMPTY_MESSAGES = {
 let tasks = loadTasks();
 let currentFilter = loadFilter();
 let editingId = null; // id of the task being edited, or null
+let searchQuery = ""; // text typed in the search box
 
 // ── DOM references (looked up once) ─────────────────────────────────
 const form = document.querySelector("#task-form");
@@ -27,6 +28,7 @@ const countEl = document.querySelector("#task-count");
 const filtersEl = document.querySelector("#filters");
 const template = document.querySelector("#task-template");
 const clearBtn = document.querySelector("#clear-completed");
+const searchInput = document.querySelector("#search-input");
 
 // ── Pure helpers ────────────────────────────────────────────────────
 
@@ -48,6 +50,17 @@ function getVisibleTasks(allTasks, filter) {
     visible.push(task);
   }
   return visible;
+}
+
+// Keeps only the tasks whose text contains the search query (case-insensitive).
+function searchTasks(list, query) {
+  if (query === "") return list;
+  const needle = query.toLowerCase();
+  const matches = [];
+  for (const task of list) {
+    if (task.text.toLowerCase().includes(needle)) matches.push(task);
+  }
+  return matches;
 }
 
 // Counts tasks that are not done.
@@ -175,14 +188,16 @@ function renderClearButton() {
 
 // Redraws everything from state. The ONLY function that writes the task list.
 function render() {
-  const visible = getVisibleTasks(tasks, currentFilter);
+  const visible = searchTasks(getVisibleTasks(tasks, currentFilter), searchQuery);
 
   const fragment = document.createDocumentFragment();
   for (const task of visible) fragment.append(createTaskElement(task));
   listEl.replaceChildren(fragment);
 
   emptyEl.hidden = visible.length > 0;
-  emptyEl.textContent = EMPTY_MESSAGES[currentFilter];
+  emptyEl.textContent = searchQuery
+    ? `No tasks match "${searchQuery}".`
+    : EMPTY_MESSAGES[currentFilter];
 
   const remaining = countRemaining(tasks);
   countEl.textContent = `${remaining} ${remaining === 1 ? "task" : "tasks"} left`;
@@ -300,6 +315,12 @@ function handleListKeydown(event) {
   }
 }
 
+// Filters the list as the user types in the search box.
+function handleSearch() {
+  searchQuery = searchInput.value.trim();
+  render();
+}
+
 // ── Wiring (listeners are attached ONCE, never inside render) ──────
 form.addEventListener("submit", handleSubmit);
 input.addEventListener("input", handleInput);
@@ -309,5 +330,6 @@ filtersEl.addEventListener("click", handleFilterClick);
 clearBtn.addEventListener("click", handleClearCompleted);
 listEl.addEventListener("dblclick", handleListDblClick);
 listEl.addEventListener("keydown", handleListKeydown);
+searchInput.addEventListener("input", handleSearch);
 
 render();

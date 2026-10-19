@@ -47,6 +47,19 @@
           class="filter-btn rounded-full px-3 py-1 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy">Completed</button>
       </nav>
 
+      <!-- Search -->
+      <div class="mt-4">
+        <label for="search-input" class="sr-only">Search tasks</label>
+        <input
+          id="search-input"
+          type="search"
+          autocomplete="off"
+          placeholder="Search tasks…"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+            focus:border-navy focus:outline-none focus:ring-2 focus:ring-mist"
+        />
+      </div>
+
       <!-- 3. Task list (filled by render()) -->
       <ul id="task-list" class="mt-4 divide-y divide-slate-200" aria-label="Tasks"></ul>
       <p id="empty-state" class="mt-6 text-center text-slate-500" hidden></p>
