@@ -29,6 +29,9 @@ const filtersEl = document.querySelector("#filters");
 const template = document.querySelector("#task-template");
 const clearBtn = document.querySelector("#clear-completed");
 const searchInput = document.querySelector("#search-input");
+const progressBar = document.querySelector("#progress-bar");
+const progressFill = document.querySelector("#progress-fill");
+const progressLabel = document.querySelector("#progress-label");
 
 // ── Pure helpers ────────────────────────────────────────────────────
 
@@ -70,6 +73,13 @@ function countRemaining(allTasks) {
     if (!task.done) count++;
   }
   return count;
+}
+
+// Returns the whole-number percentage of completed tasks (0 for an empty list).
+function getProgress(allTasks) {
+  if (allTasks.length === 0) return 0;
+  const done = allTasks.length - countRemaining(allTasks);
+  return Math.round((done / allTasks.length) * 100);
 }
 
 // ── State updates (each one saves and re-renders) ───────────────────
@@ -186,6 +196,14 @@ function renderClearButton() {
   clearBtn.textContent = `Clear completed (${doneCount})`;
 }
 
+// Updates the progress bar with the percentage of tasks completed.
+function renderProgress() {
+  const percent = getProgress(tasks);
+  progressFill.style.width = `${percent}%`;
+  progressBar.setAttribute("aria-valuenow", String(percent));
+  progressLabel.textContent = `${percent}% complete`;
+}
+
 // Redraws everything from state. The ONLY function that writes the task list.
 function render() {
   const visible = searchTasks(getVisibleTasks(tasks, currentFilter), searchQuery);
@@ -204,6 +222,7 @@ function render() {
 
   renderFilters();
   renderClearButton();
+  renderProgress();
   focusEditInput();
 }
 
