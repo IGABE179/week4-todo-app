@@ -72,6 +72,20 @@ function addTask(text) {
   commit();
 }
 
+// Flips the done state of one task.
+function toggleTask(id) {
+  tasks = tasks.map((task) =>
+    task.id === id ? { ...task, done: !task.done } : task,
+  );
+  commit();
+}
+
+// Removes one task.
+function deleteTask(id) {
+  tasks = tasks.filter((task) => task.id !== id);
+  commit();
+}
+
 // ── Rendering ───────────────────────────────────────────────────────
 
 // Builds one <li> for a task from the <template> (no innerHTML with user data).
@@ -147,8 +161,41 @@ function handleInput() {
   }
 }
 
+// Moves keyboard focus to a button inside one task, or to the input if it is gone.
+function focusTaskButton(id, action) {
+  const target = listEl.querySelector(`[data-id="${id}"] [data-action="${action}"]`);
+  (target ?? input).focus();
+}
+
+// Asks for confirmation, deletes the task, and keeps focus nearby.
+function confirmAndDelete(li) {
+  const id = Number(li.dataset.id);
+  const task = tasks.find((item) => item.id === id);
+  if (!task || !window.confirm(`Delete "${task.text}"?`)) return;
+  const neighbour = li.nextElementSibling ?? li.previousElementSibling;
+  const neighbourId = neighbour?.dataset.id;
+  deleteTask(id);
+  focusTaskButton(neighbourId, "delete");
+}
+
+// Delegated handler for the buttons inside each task.
+function handleListClick(event) {
+  const deleteButton = event.target.closest("[data-action='delete']");
+  if (deleteButton) confirmAndDelete(deleteButton.closest("li"));
+}
+
+// Delegated handler for checkboxes.
+function handleListChange(event) {
+  if (!event.target.matches(".task-toggle")) return;
+  const id = Number(event.target.closest("li").dataset.id);
+  toggleTask(id);
+  listEl.querySelector(`[data-id="${id}"] .task-toggle`)?.focus();
+}
+
 // ── Wiring (listeners are attached ONCE, never inside render) ──────
 form.addEventListener("submit", handleSubmit);
 input.addEventListener("input", handleInput);
+listEl.addEventListener("click", handleListClick);
+listEl.addEventListener("change", handleListChange);
 
 render();
