@@ -25,6 +25,7 @@ const emptyEl = document.querySelector("#empty-state");
 const countEl = document.querySelector("#task-count");
 const filtersEl = document.querySelector("#filters");
 const template = document.querySelector("#task-template");
+const clearBtn = document.querySelector("#clear-completed");
 
 // ── Pure helpers ────────────────────────────────────────────────────
 
@@ -93,6 +94,12 @@ function setFilter(filter) {
   render();
 }
 
+// Removes every completed task.
+function clearCompleted() {
+  tasks = tasks.filter((task) => !task.done);
+  commit();
+}
+
 // ── Rendering ───────────────────────────────────────────────────────
 
 // Builds one <li> for a task from the <template> (no innerHTML with user data).
@@ -125,6 +132,13 @@ function renderFilters() {
   }
 }
 
+// Shows "Clear completed (n)" only when at least one task is done.
+function renderClearButton() {
+  const doneCount = tasks.length - countRemaining(tasks);
+  clearBtn.hidden = doneCount === 0;
+  clearBtn.textContent = `Clear completed (${doneCount})`;
+}
+
 // Redraws everything from state. The ONLY function that writes the task list.
 function render() {
   const visible = getVisibleTasks(tasks, currentFilter);
@@ -140,6 +154,7 @@ function render() {
   countEl.textContent = `${remaining} ${remaining === 1 ? "task" : "tasks"} left`;
 
   renderFilters();
+  renderClearButton();
 }
 
 // ── Event handlers ──────────────────────────────────────────────────
@@ -206,11 +221,21 @@ function handleFilterClick(event) {
   setFilter(button.dataset.filter);
 }
 
+// Removes every completed task after the user confirms.
+function handleClearCompleted() {
+  const doneCount = tasks.length - countRemaining(tasks);
+  const label = doneCount === 1 ? "task" : "tasks";
+  if (!window.confirm(`Remove ${doneCount} completed ${label}?`)) return;
+  clearCompleted();
+  input.focus();
+}
+
 // ── Wiring (listeners are attached ONCE, never inside render) ──────
 form.addEventListener("submit", handleSubmit);
 input.addEventListener("input", handleInput);
 listEl.addEventListener("click", handleListClick);
 listEl.addEventListener("change", handleListChange);
 filtersEl.addEventListener("click", handleFilterClick);
+clearBtn.addEventListener("click", handleClearCompleted);
 
 render();
