@@ -15,6 +15,7 @@ const EMPTY_MESSAGES = {
 // ── State (the single source of truth) ──────────────────────────────
 let tasks = loadTasks();
 let currentFilter = loadFilter();
+let editingId = null; // id of the task being edited, or null
 
 // ── DOM references (looked up once) ─────────────────────────────────
 const form = document.querySelector("#task-form");
@@ -83,6 +84,7 @@ function toggleTask(id) {
 
 // Removes one task.
 function deleteTask(id) {
+  if (editingId === id) editingId = null;
   tasks = tasks.filter((task) => task.id !== id);
   commit();
 }
@@ -97,6 +99,13 @@ function setFilter(filter) {
 // Removes every completed task.
 function clearCompleted() {
   tasks = tasks.filter((task) => !task.done);
+  commit();
+}
+
+// Replaces the text of one task and leaves edit mode.
+function editTask(id, text) {
+  tasks = tasks.map((task) => (task.id === id ? { ...task, text } : task));
+  editingId = null;
   commit();
 }
 
@@ -119,7 +128,32 @@ function createTaskElement(task) {
 
   const deleteButton = li.querySelector("[data-action='delete']");
   deleteButton.setAttribute("aria-label", `Delete "${task.text}"`);
+  const editButton = li.querySelector("[data-action='edit']");
+  editButton.setAttribute("aria-label", `Edit "${task.text}"`);
+  if (task.id === editingId) textEl.replaceWith(createEditInput(task));
   return li;
+}
+
+// Builds the text box shown while a task is being edited.
+function createEditInput(task) {
+  const editInput = document.createElement("input");
+  editInput.type = "text";
+  editInput.value = task.text; // a property, so the text is never parsed as HTML
+  editInput.maxLength = 120;
+  editInput.className =
+    "edit-input flex-1 rounded border border-navy px-2 py-1 focus:outline-none focus:ring-2 focus:ring-mist";
+  editInput.setAttribute("aria-label", `Edit text of "${task.text}"`);
+  editInput.setAttribute("aria-describedby", "task-error");
+  return editInput;
+}
+
+// Puts the cursor at the end of the edit box after a re-render.
+function focusEditInput() {
+  const editInput = listEl.querySelector(".edit-input");
+  if (!editInput) return;
+  editInput.focus();
+  const end = editInput.value.length;
+  editInput.setSelectionRange(end, end);
 }
 
 // Updates the filter buttons' appearance and aria-pressed state.
@@ -155,6 +189,7 @@ function render() {
 
   renderFilters();
   renderClearButton();
+  focusEditInput();
 }
 
 // ── Event handlers ──────────────────────────────────────────────────
@@ -202,6 +237,12 @@ function confirmAndDelete(li) {
 
 // Delegated handler for the buttons inside each task.
 function handleListClick(event) {
+  const editButton = event.target.closest("[data-action='edit']");
+  if (editButton) {
+    editingId = Number(editButton.closest("li").dataset.id);
+    render();
+    return;
+  }
   const deleteButton = event.target.closest("[data-action='delete']");
   if (deleteButton) confirmAndDelete(deleteButton.closest("li"));
 }
@@ -230,6 +271,35 @@ function handleClearCompleted() {
   input.focus();
 }
 
+// Double-clicking a task's text starts editing it.
+function handleListDblClick(event) {
+  const textEl = event.target.closest(".task-text");
+  if (!textEl) return;
+  editingId = Number(textEl.closest("li").dataset.id);
+  render();
+}
+
+// While editing: Enter saves (if the text is valid) and Escape cancels.
+function handleListKeydown(event) {
+  if (!event.target.matches(".edit-input")) return;
+  const id = editingId;
+  if (event.key === "Escape") {
+    editingId = null;
+    errorEl.textContent = "";
+    render();
+    focusTaskButton(id, "edit");
+  } else if (event.key === "Enter") {
+    event.preventDefault();
+    const text = event.target.value.trim();
+    const error = validateTaskText(text);
+    errorEl.textContent = error;
+    event.target.setAttribute("aria-invalid", String(Boolean(error)));
+    if (error) return;
+    editTask(id, text);
+    focusTaskButton(id, "edit");
+  }
+}
+
 // ── Wiring (listeners are attached ONCE, never inside render) ──────
 form.addEventListener("submit", handleSubmit);
 input.addEventListener("input", handleInput);
@@ -237,5 +307,7 @@ listEl.addEventListener("click", handleListClick);
 listEl.addEventListener("change", handleListChange);
 filtersEl.addEventListener("click", handleFilterClick);
 clearBtn.addEventListener("click", handleClearCompleted);
+listEl.addEventListener("dblclick", handleListDblClick);
+listEl.addEventListener("keydown", handleListKeydown);
 
 render();
