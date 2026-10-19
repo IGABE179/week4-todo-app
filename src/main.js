@@ -86,6 +86,13 @@ function deleteTask(id) {
   commit();
 }
 
+// Changes the active filter.
+function setFilter(filter) {
+  currentFilter = filter;
+  saveFilter(filter);
+  render();
+}
+
 // ── Rendering ───────────────────────────────────────────────────────
 
 // Builds one <li> for a task from the <template> (no innerHTML with user data).
@@ -192,10 +199,18 @@ function handleListChange(event) {
   listEl.querySelector(`[data-id="${id}"] .task-toggle`)?.focus();
 }
 
+// Handles clicks on the filter buttons.
+function handleFilterClick(event) {
+  const button = event.target.closest("[data-filter]");
+  if (!button) return;
+  setFilter(button.dataset.filter);
+}
+
 // ── Wiring (listeners are attached ONCE, never inside render) ──────
 form.addEventListener("submit", handleSubmit);
 input.addEventListener("input", handleInput);
 listEl.addEventListener("click", handleListClick);
 listEl.addEventListener("change", handleListChange);
+filtersEl.addEventListener("click", handleFilterClick);
 
 render();
