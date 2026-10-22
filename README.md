@@ -65,3 +65,6 @@ Then open the address Vite prints (usually http://localhost:5173/).
 ## Challenges and what I learned
 
 One of my main challenges was fixing a bug that caused a feature of my Study Planner to stop working as expected. I used the browser DevTools Console and Network tab to investigate the problem and look for errors. After checking the results, I identified the cause of the bug and made changes to fix it. This experience taught me to be patient when debugging. I also learned that fixing bugs is an important part of building a working and reliable website.
+
+## Link to my video 
+https://drive.google.com/file/d/1zKLJvLrVqXlSDm_9qUCWyTfBmBAIA7b9/view?usp=sharing
